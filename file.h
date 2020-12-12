@@ -8,7 +8,7 @@
 #include <seccomp.h>
 
 struct file {
-  struct stat stat;
+	struct stat stat;
 };
 extern struct file *files;
 
@@ -20,6 +20,6 @@ void dump_files(const void *node, VISIT visit, int level);
 #define file_delete(key) tdelete(key, (void **)&files, file_cmp)
 #define file_walk(action) twalk(files, action)
 #define file_free(file) do { \
-  free(file); \
-  file = 0; \
+	free(file); \
+	file = 0; \
 } while(0);
