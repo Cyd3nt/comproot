@@ -9,12 +9,13 @@
 #include "file.h"
 
 #define add_handler(syscall_name) \
-	[SCMP_SYS(syscall_name)] = handle_##syscall_name,
+	[SCMP_SYS(syscall_name)] = handle_##syscall_name
 
 handler_func handlers[] = {
-	add_handler(chown)
-	add_handler(fchownat)
-	add_handler(lchown)
+	add_handler(chown),
+	add_handler(fchown),
+	add_handler(fchownat),
+	add_handler(lchown),
 };
 #undef add_handler
 
@@ -79,11 +80,12 @@ int main(int argc, char *argv[]) {
 
 #define add_rule(syscall_name) \
 	if (seccomp_rule_add(sctx, SCMP_ACT_NOTIFY, SCMP_SYS(syscall_name), 0)) \
-	err(3, "seccomp_rule_add(%s)", #syscall_name);
+		err(3, "seccomp_rule_add(%s)", #syscall_name);
 
-	add_rule(chown)
-	add_rule(fchownat)
-	add_rule(lchown)
+	add_rule(chown);
+	add_rule(fchown);
+	add_rule(fchownat);
+	add_rule(lchown);
 #undef add_rule
 
 		if (seccomp_load(sctx))
