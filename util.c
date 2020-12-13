@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: NCSA */
 #include <errno.h>   /* errno */
-#include <fcntl.h>   /* AT_* */
+#include <fcntl.h>   /* AT_*, FD_*, fcntl */
 #include <stdio.h>   /* snprintf */
 #include <string.h>  /* strnlen */
 
@@ -86,4 +86,14 @@ int pull_pathname(int notifyfd, struct seccomp_notif *req, int argno, char pathn
 	rc = check_pathname(pathname);
 out:
 	return rc;
+}
+
+void set_cloexec(int fd) {
+	int flags;
+
+	if ((flags = fcntl(fd, F_GETFD)) == -1)
+		err(2, "fcntl(F_GETFD)");
+	flags |= FD_CLOEXEC;
+	if (fcntl(fd, F_SETFD, flags) == -1)
+		err(2, "fcntl(F_SETFD, FD_CLOEXEC)");
 }

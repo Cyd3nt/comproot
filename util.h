@@ -13,3 +13,4 @@ int tx_data(int notifyfd, struct seccomp_notif *req, PROC_VM_BUFS, int push);
 
 int check_pathname(char pathname[PATH_MAX]);
 int pull_pathname(int notifyfd, struct seccomp_notif *req, int argno, char pathname[PATH_MAX]);
+void set_cloexec(int fd);
