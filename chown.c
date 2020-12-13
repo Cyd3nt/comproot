@@ -27,9 +27,9 @@ int handle_chown_inner(char *pathname, uid_t owner, gid_t group, int follow) {
 	if (!f)
 		goto out;
 	if (owner != (uid_t)-1)
-		f->stat.st_uid = owner;
+		f->st_uid = owner;
 	if (group != (gid_t)-1)
-		f->stat.st_gid = group;
+		f->st_gid = group;
 
 	rc = 0;
 out:

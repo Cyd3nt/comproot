@@ -8,18 +8,12 @@
 #include <seccomp.h>
 
 struct file {
-	struct stat stat;
+	dev_t st_dev;
+	ino_t st_ino;
+	uid_t st_uid;
+	gid_t st_gid;
 };
-extern struct file *files;
 
-int file_cmp(const void *a, const void *b);
 struct file *file_get(char *path, int follow, int update);
+void file_walk(void (*action)(const void *, VISIT, int));
 void dump_files(const void *node, VISIT visit, int level);
-#define file_search(key) tsearch(key, (void **)&files, file_cmp)
-#define file_find(key) tfind(key, (void *const *)&files, file_cmp)
-#define file_delete(key) tdelete(key, (void **)&files, file_cmp)
-#define file_walk(action) twalk(files, action)
-#define file_free(file) do { \
-	free(file); \
-	file = 0; \
-} while(0);
