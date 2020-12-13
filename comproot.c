@@ -19,7 +19,7 @@ handler_func handlers[] = {
 };
 #undef add_handler
 
-void new_notification(short revents, int notifyfd) {
+static void new_notification(short revents, int notifyfd) {
 	struct seccomp_notif *req;
 	struct seccomp_notif_resp *resp;
 	handler_func handler;
@@ -43,7 +43,7 @@ void new_notification(short revents, int notifyfd) {
 	seccomp_notify_free(req, resp);
 }
 
-int new_signal(short revents, int sfd, int want_pid) {
+static int new_signal(short revents, int sfd, int want_pid) {
 	struct signalfd_siginfo si;
 	ssize_t rc;
 
