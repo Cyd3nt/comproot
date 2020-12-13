@@ -23,7 +23,7 @@ int handle_chown_inner(char *pathname, uid_t owner, gid_t group, int follow) {
 	} else
 		fullpath = pathname;
 
-	struct file *f = file_get(fullpath, follow, 1);
+	struct file *f = file_upsert_path(fullpath, follow);
 	if (!f)
 		goto out;
 	if (owner != (uid_t)-1)

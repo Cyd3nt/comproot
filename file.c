@@ -22,8 +22,19 @@ static void *file_search(struct file *f) {
 	return tsearch((void *)f, &files, file_cmp);
 }
 
-struct file *file_get(char *path, int follow, int update) {
+struct file *file_get(dev_t dev, ino_t ino) {
 	struct file *f = 0, f2;
+
+	f2.st_dev = dev;
+	f2.st_ino = ino;
+
+	if ((f = file_find(&f2)))
+		f = fileptr(f);
+	return f;
+}
+
+struct file *file_upsert_path(char *path, int follow) {
+	struct file *f = 0;
 	struct stat st;
 	int rc;
 
@@ -37,11 +48,8 @@ struct file *file_get(char *path, int follow, int update) {
 #endif
 		goto out;
 	}
-	f2.st_dev = st.st_dev;
-	f2.st_ino = st.st_ino;
 
-	if ((f = file_find(&f2))) {
-		f = fileptr(f);
+	if ((f = file_get(st.st_dev, st.st_ino))) {
 		goto out;
 	} else {
 		f = malloc(sizeof(struct file));

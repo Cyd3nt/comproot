@@ -14,6 +14,7 @@ struct file {
 	gid_t st_gid;
 };
 
-struct file *file_get(char *path, int follow, int update);
+struct file *file_get(dev_t dev, ino_t ino);
+struct file *file_upsert_path(char *path, int follow);
 void file_walk(void (*action)(const void *, VISIT, int));
 void dump_files(const void *node, VISIT visit, int level);
