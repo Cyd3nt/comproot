@@ -9,10 +9,9 @@
 #include <sys/socket.h>   /* AF_*, CMSG_*, SCM_*, SOCK_*, SOL_*, socketpair */
 #include <unistd.h>       /* execvp, fork */
 
-#include "chown.h"
 #include "comproot.h"
 #include "file.h"
-#include "stat.h"
+#include "handlers/handlers_inc.h"
 #include "util.h"
 
 #define ADVERTISEMENT "COMPROOT_STAGE2"
@@ -20,7 +19,7 @@
 #define x(syscall_name) \
 	[SCMP_SYS(syscall_name)] = handle_##syscall_name,
 handler_func handlers[] = {
-#include "handlers.h"
+#include "handlers/handlers.h"
 };
 #undef x
 
@@ -173,7 +172,7 @@ static int stage2(char *sockfd_env, char *argv[]) {
 #define x(syscall_name) \
 	if (seccomp_rule_add(sctx, SCMP_ACT_NOTIFY, SCMP_SYS(syscall_name), 0)) \
 		err(3, "seccomp_rule_add(%s)", #syscall_name);
-#include "handlers.h"
+#include "handlers/handlers.h"
 #undef x
 
 	if (seccomp_load(sctx))

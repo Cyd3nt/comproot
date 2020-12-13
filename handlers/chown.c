@@ -5,9 +5,9 @@
 #include <unistd.h> /* *id_t */
 
 #include "chown.h"
-#include "comproot.h"
-#include "file.h"
-#include "util.h"
+#include "../comproot.h"
+#include "../file.h"
+#include "../util.h"
 
 int handle_chown_inner(char *pathname, uid_t owner, gid_t group, int follow) {
 	int rc = -1;

@@ -1,6 +1,6 @@
 #pragma once
 /* SPDX-License-Identifier: NCSA */
-#include "comproot.h"
+#include "../comproot.h"
 
 int handle_chown_inner(char *pathname, uid_t owner, gid_t group, int follow);
 
