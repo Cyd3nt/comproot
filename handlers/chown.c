@@ -147,7 +147,7 @@ void handle_fchownat(handler_args) {
 	}
 
 	char procpath[PATH_MAX] = {0};
-	if (chdir_to_fd(req->pid, req->data.args[0], procpath))
+	if (chdir_to_fd(req->pid, fd, procpath))
 		goto out;
 
 	char *fullpath = 0;

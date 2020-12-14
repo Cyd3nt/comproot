@@ -83,7 +83,7 @@ static void send_notifyfd(int sockfd, pid_t child, int notifyfd) {
 	memset(cbuf, 0, sizeof(cbuf));
 
 	iov.iov_base = buf;
-	iov.iov_len = sizeof(pid_t);
+	iov.iov_len = sizeof(buf);
 	memcpy(iov.iov_base, &child, iov.iov_len);
 
 	msg.msg_namelen = 0;
@@ -115,7 +115,7 @@ static void recv_notifyfd(int sockfd, pid_t *child, int *notifyfd) {
 	memset(cbuf, 0, sizeof(cbuf));
 
 	iov.iov_base = buf;
-	iov.iov_len = sizeof(pid_t);
+	iov.iov_len = sizeof(buf);
 
 	msg.msg_namelen = 0;
 	msg.msg_iov = &iov;
