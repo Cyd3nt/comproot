@@ -4,7 +4,7 @@
 #include "comproot.h"
 #include "file.h"
 
-#define fileptr(f) *(struct file **)f
+#define FILEPTR(f) *(struct file **)f
 void *files = 0;
 
 static int file_cmp(const void *a, const void *b) {
@@ -29,7 +29,7 @@ struct file *file_get(dev_t dev, ino_t ino) {
 	f2.st_ino = ino;
 
 	if ((f = file_find(&f2)))
-		f = fileptr(f);
+		f = FILEPTR(f);
 	return f;
 }
 
@@ -79,7 +79,7 @@ void dump_files(const void *node, VISIT visit, int level) {
 
 	if (!node || (visit != preorder && visit != leaf))
 		return;
-	const struct file *f = fileptr(node);
+	const struct file *f = FILEPTR(node);
 	if (!f)
 		return;
 

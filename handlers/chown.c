@@ -36,7 +36,7 @@ out:
 	return rc;
 }
 
-static void handle_chown_inner(char *syscall_name, handler_args, int follow) {
+static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 	char pathname[PATH_MAX] = {0};
 	uid_t owner = req->data.args[1];
 	gid_t group = req->data.args[2];
@@ -63,15 +63,15 @@ out:
 	resp->flags = 0;
 }
 
-void handle_chown(handler_args) {
-	handle_chown_inner("chown", pass_handler_args, 1);
+void handle_chown(HANDLER_ARGS) {
+	handle_chown_inner("chown", PASS_HANDLER_ARGS, 1);
 }
 
-void handle_lchown(handler_args) {
-	handle_chown_inner("lchown", pass_handler_args, 0);
+void handle_lchown(HANDLER_ARGS) {
+	handle_chown_inner("lchown", PASS_HANDLER_ARGS, 0);
 }
 
-void handle_fchown(handler_args) {
+void handle_fchown(HANDLER_ARGS) {
 	int fd = req->data.args[0];
 	uid_t owner = req->data.args[1];
 	gid_t group = req->data.args[2];
@@ -101,7 +101,7 @@ out:
 	resp->flags = 0;
 }
 
-void handle_fchownat(handler_args) {
+void handle_fchownat(HANDLER_ARGS) {
 	int fd = req->data.args[0];
 	char pathname[PATH_MAX] = {0}; int pathname_l = -1;
 	uid_t owner = req->data.args[2];

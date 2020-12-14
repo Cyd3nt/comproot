@@ -16,12 +16,12 @@
 
 #define ADVERTISEMENT "COMPROOT_STAGE2"
 
-#define x(syscall_name) \
+#define X(syscall_name) \
 	[SCMP_SYS(syscall_name)] = handle_##syscall_name,
 handler_func handlers[] = {
 #include "handlers/handlers.h"
 };
-#undef x
+#undef X
 
 static void new_notification(short revents, int notifyfd) {
 	struct seccomp_notif *req;
@@ -151,11 +151,11 @@ static int stage2(char *sockfd_env, char *argv[]) {
 
 	if (!(sctx = seccomp_init(SCMP_ACT_ALLOW)))
 		err(3, "seccomp_init");
-#define x(syscall_name) \
+#define X(syscall_name) \
 	if (seccomp_rule_add(sctx, SCMP_ACT_NOTIFY, SCMP_SYS(syscall_name), 0)) \
 		err(3, "seccomp_rule_add(%s)", #syscall_name);
 #include "handlers/handlers.h"
-#undef x
+#undef X
 
 	if (seccomp_load(sctx))
 		err(3, "seccomp_load");
