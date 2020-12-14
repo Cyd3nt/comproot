@@ -16,17 +16,9 @@
 
 #define ADVERTISEMENT "COMPROOT_STAGE2"
 
-#define X(syscall_name) \
-	[SCMP_SYS(syscall_name)] = handle_##syscall_name,
-handler_func handlers[] = {
-#include "handlers/handlers.h"
-};
-#undef X
-
 static void new_notification(short revents, int notifyfd) {
 	struct seccomp_notif *req;
 	struct seccomp_notif_resp *resp;
-	handler_func handler;
 
 	if (!(revents & POLLIN))
 		errx(2, "notifyfd has status %d", revents);
@@ -36,11 +28,18 @@ static void new_notification(short revents, int notifyfd) {
 	if (seccomp_notify_receive(notifyfd, req))
 		err(3, "seccomp_notify_receive");
 
-	handler = handlers[req->data.nr];
-	if (!handler)
+	switch(req->data.nr) {
+#define X(syscall_name) \
+	case SCMP_SYS(syscall_name): \
+		handle_##syscall_name(notifyfd, req, resp); \
+		break;
+#include "handlers/handlers.h"
+#undef X
+	default:
 		errx(3, "received syscall %d with no handler", req->data.nr);
+		break;
+	}
 
-	handler(notifyfd, req, resp);
 	if (seccomp_notify_respond(notifyfd, resp))
 		err(3, "seccomp_notify_respond");
 
