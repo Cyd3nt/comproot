@@ -17,4 +17,5 @@ Dependencies
 ------------
 
 * `libseccomp <https://github.com/seccomp/libseccomp>`_
-* Kernels with ``seccomp`` API >= 5 (``SCMP_ACT_NOTIFY``)
+* Kernels with ``seccomp`` API >= 5 (``SECCOMP_RET_USER_NOTIF``;
+  introduced in 5.0-rc1)
