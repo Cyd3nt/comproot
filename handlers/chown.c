@@ -9,7 +9,7 @@
 #include "../file.h"
 #include "../util.h"
 
-int handle_chown_inner(char *pathname, uid_t owner, gid_t group, int follow) {
+int record_chown(char *pathname, uid_t owner, gid_t group, int follow) {
 	int rc = -1;
 	char *fullpath;
 
@@ -36,7 +36,7 @@ out:
 	return rc;
 }
 
-void handle_chown(handler_args) {
+static void handle_chown_inner(char *syscall_name, handler_args, int follow) {
 	char pathname[PATH_MAX] = {0};
 	uid_t owner = req->data.args[1];
 	gid_t group = req->data.args[2];
@@ -46,7 +46,7 @@ void handle_chown(handler_args) {
 	if (pull_pathname(notifyfd, req, 0, pathname) == -1)
 		goto out;
 #ifndef NDEBUG
-	pwarnx(req->pid, "chown(\"%s\", %d, %d)", pathname, owner, group);
+	pwarnx(req->pid, "%s(\"%s\", %d, %d)", syscall_name, pathname, owner, group);
 #endif
 
 	if (pathname[0] != '/') {
@@ -55,7 +55,7 @@ void handle_chown(handler_args) {
 			goto out;
 	}
 
-	rc = handle_chown_inner(pathname, owner, group, 1);
+	rc = record_chown(pathname, owner, group, follow);
 out:
 	resp->id = req->id;
 	resp->val = rc;
@@ -63,31 +63,12 @@ out:
 	resp->flags = 0;
 }
 
+void handle_chown(handler_args) {
+	handle_chown_inner("chown", pass_handler_args, 1);
+}
+
 void handle_lchown(handler_args) {
-	char pathname[PATH_MAX] = {0};
-	uid_t owner = req->data.args[1];
-	gid_t group = req->data.args[2];
-
-	int rc = -1;
-
-	if (pull_pathname(notifyfd, req, 0, pathname) == -1)
-		goto out;
-#ifndef NDEBUG
-	pwarnx(req->pid, "lchown(\"%s\", %d, %d)", pathname, owner, group);
-#endif
-
-	if (pathname[0] != '/') {
-		char procpath[PATH_MAX];
-		if (chdir_to_fd(req->pid, AT_FDCWD, procpath))
-			goto out;
-	}
-
-	rc = handle_chown_inner(pathname, owner, group, 0);
-out:
-	resp->id = req->id;
-	resp->val = rc;
-	resp->error = rc ? -errno : 0;
-	resp->flags = 0;
+	handle_chown_inner("lchown", pass_handler_args, 0);
 }
 
 void handle_fchown(handler_args) {
@@ -112,7 +93,7 @@ void handle_fchown(handler_args) {
 		goto out;
 	}
 
-	rc = handle_chown_inner(procpath, owner, group, 0);
+	rc = record_chown(procpath, owner, group, 0);
 out:
 	resp->id = req->id;
 	resp->val = rc;
@@ -156,7 +137,7 @@ void handle_fchownat(handler_args) {
 	else
 		fullpath = pathname;
 
-	rc = handle_chown_inner(fullpath, owner, group, !(flags & AT_SYMLINK_NOFOLLOW));
+	rc = record_chown(fullpath, owner, group, !(flags & AT_SYMLINK_NOFOLLOW));
 out:
 	resp->id = req->id;
 	resp->val = rc;

@@ -10,4 +10,5 @@
 #define pwarnx(pid, fmt, ...) warnx("[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 
 #define handler_args int notifyfd, struct seccomp_notif *req, struct seccomp_notif_resp *resp
+#define pass_handler_args notifyfd, req, resp
 typedef void (*handler_func)(handler_args);
