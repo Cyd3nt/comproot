@@ -72,39 +72,7 @@ static int new_signal(short revents, int sfd, int want_pid, int *status) {
 	return 0;
 }
 
-static void send_notifyfd(int sockfd, pid_t child, int notifyfd) {
-	char buf[sizeof(pid_t)];
-	char cbuf[CMSG_SPACE(sizeof(int))];
-	struct iovec iov;
-	struct msghdr msg;
-	struct cmsghdr *cmsg;
-
-	memset(&msg, 0, sizeof(msg));
-	memset(cbuf, 0, sizeof(cbuf));
-
-	iov.iov_base = buf;
-	iov.iov_len = sizeof(buf);
-	memcpy(iov.iov_base, &child, iov.iov_len);
-
-	msg.msg_namelen = 0;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_control = cbuf;
-	msg.msg_controllen = sizeof(cbuf);
-	msg.msg_flags = 0;
-
-	cmsg = CMSG_FIRSTHDR(&msg);
-	cmsg->cmsg_len = CMSG_LEN(sizeof(int));
-	cmsg->cmsg_level = SOL_SOCKET;
-	cmsg->cmsg_type = SCM_RIGHTS;
-
-	memcpy(CMSG_DATA(cmsg), &notifyfd, sizeof(int));
-
-	if (sendmsg(sockfd, &msg, 0) == -1)
-		err(2, "sendmsg(sockfd)");
-}
-
-static void recv_notifyfd(int sockfd, pid_t *child, int *notifyfd) {
+static void tx_notifyfd(int sockfd, pid_t *child, int *notifyfd, int push) {
 	char buf[sizeof(pid_t)];
 	char cbuf[CMSG_SPACE(sizeof(int))];
 	struct iovec iov;
@@ -124,18 +92,32 @@ static void recv_notifyfd(int sockfd, pid_t *child, int *notifyfd) {
 	msg.msg_controllen = sizeof(cbuf);
 	msg.msg_flags = 0;
 
-	if (recvmsg(sockfd, &msg, 0) == -1)
-		err(2, "recvmsg(sockfd)");
-	close(sockfd);
+	if (push) {
+		memcpy(iov.iov_base, child, iov.iov_len);
 
-	*child = *(pid_t *)buf;
-	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-		if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
-			memcpy(notifyfd, CMSG_DATA(cmsg), sizeof(int));
-			return;
+		cmsg = CMSG_FIRSTHDR(&msg);
+		cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+		cmsg->cmsg_level = SOL_SOCKET;
+		cmsg->cmsg_type = SCM_RIGHTS;
+
+		memcpy(CMSG_DATA(cmsg), notifyfd, sizeof(int));
+
+		if (sendmsg(sockfd, &msg, 0) == -1)
+			err(2, "sendmsg(sockfd)");
+	} else {
+		if (recvmsg(sockfd, &msg, 0) == -1)
+			err(2, "recvmsg(sockfd)");
+		close(sockfd);
+
+		*child = *(pid_t *)buf;
+		for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+			if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
+				memcpy(notifyfd, CMSG_DATA(cmsg), sizeof(int));
+				return;
+			}
 		}
+		errx(2, "no notifyfd received");
 	}
-	errx(2, "no notifyfd received");
 }
 
 static void advertise_socket(int sockfd) {
@@ -191,7 +173,7 @@ static int stage2(char *sockfd_env, char *argv[]) {
 		err(2, "fork");
 	/* else parent ... */
 
-	send_notifyfd(sockfd, child, notifyfd);
+	tx_notifyfd(sockfd, &child, &notifyfd, 1);
 	return 0;
 }
 
@@ -233,7 +215,7 @@ static int stage1(char *argv[]) {
 	/* else parent ... */
 
 	close(sockfds[0]);
-	recv_notifyfd(sockfds[1], &child, &notifyfd);
+	tx_notifyfd(sockfds[1], &child, &notifyfd, 0);
 
 	struct pollfd fds[] = {{notifyfd, POLLIN, 0}, {sfd, POLLIN, 0}};
 	while (1) {
