@@ -235,9 +235,9 @@ static int stage1(char *argv[]) {
 	close(sockfds[0]);
 	recv_notifyfd(sockfds[1], &child, &notifyfd);
 
-	struct pollfd fds[2] = {{notifyfd, POLLIN, 0}, {sfd, POLLIN, 0}};
+	struct pollfd fds[] = {{notifyfd, POLLIN, 0}, {sfd, POLLIN, 0}};
 	while (1) {
-		rc = ppoll(fds, sizeof(fds), 0, &smask);
+		rc = ppoll(fds, 2, 0, &smask);
 		if (rc == -1)
 			err(2, "ppoll");
 		if (fds[0].revents)
