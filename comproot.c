@@ -28,6 +28,9 @@ static void new_notification(short revents, int notifyfd) {
 	if (seccomp_notify_receive(notifyfd, req))
 		err(3, "seccomp_notify_receive");
 
+	resp->id = req->id;
+	resp->flags = 0;
+
 	switch(req->data.nr) {
 #define X(syscall_name) \
 	case SCMP_SYS(syscall_name): \

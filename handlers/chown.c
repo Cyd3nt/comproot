@@ -57,10 +57,8 @@ static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	rc = record_chown(pathname, owner, group, follow);
 out:
-	resp->id = req->id;
 	resp->val = rc;
 	resp->error = rc ? -errno : 0;
-	resp->flags = 0;
 }
 
 void handle_chown(HANDLER_ARGS) {
@@ -95,10 +93,8 @@ void handle_fchown(HANDLER_ARGS) {
 
 	rc = record_chown(procpath, owner, group, 0);
 out:
-	resp->id = req->id;
 	resp->val = rc;
 	resp->error = rc ? -errno : 0;
-	resp->flags = 0;
 }
 
 void handle_fchownat(HANDLER_ARGS) {
@@ -139,8 +135,6 @@ void handle_fchownat(HANDLER_ARGS) {
 
 	rc = record_chown(fullpath, owner, group, !(flags & AT_SYMLINK_NOFOLLOW));
 out:
-	resp->id = req->id;
 	resp->val = rc;
 	resp->error = rc ? -errno : 0;
-	resp->flags = 0;
 }
