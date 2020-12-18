@@ -1,5 +1,5 @@
 *.o
-comproot
-handlers/decl_handlers.h
-handlers/handlers.h
+src/comproot
+src/handlers/decl_handlers.h
+src/handlers/handlers.h
 test
