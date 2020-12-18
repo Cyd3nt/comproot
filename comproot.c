@@ -11,7 +11,7 @@
 
 #include "comproot.h"
 #include "file.h"
-#include "handlers/handlers_inc.h"
+#include "handlers/decl_handlers.h"
 #include "util.h"
 
 #define ADVERTISEMENT "COMPROOT_STAGE2"

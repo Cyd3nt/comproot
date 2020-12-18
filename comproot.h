@@ -32,3 +32,4 @@ extern int verbose;
 #define HANDLER_ARGS int notifyfd, struct seccomp_notif *req, struct seccomp_notif_resp *resp
 #define PASS_HANDLER_ARGS notifyfd, req, resp
 typedef void (*handler_func)(HANDLER_ARGS);
+#define DECL_HANDLER(syscall_name) void handle_##syscall_name(HANDLER_ARGS)

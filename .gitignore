@@ -1,3 +1,5 @@
 *.o
 comproot
+handlers/decl_handlers.h
+handlers/handlers.h
 test

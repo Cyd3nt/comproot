@@ -1,20 +1,33 @@
 MAIN = comproot
-HANDLERS.o = \
-	handlers/chown.o
-SRC.o = \
+HANDLERS.C = $(wildcard handlers/handle_*.c)
+HANDLERS.H = handlers/decl_handlers.h handlers/handlers.h
+OBJS = \
+	$(MAIN).o \
+	$(HANDLERS.C:%.c=%.o) \
 	file.o \
 	util.o \
-	$(HANDLERS.o) \
-	$(MAIN).o
+
+
+CFLAGS_ALL = -D_GNU_SOURCE -Wall -Wextra -Wpedantic $(CFLAGS)
 LIBS = -lseccomp
 
 all: $(MAIN)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -D_GNU_SOURCE -Wall -Wextra -Wpedantic $(LDFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS_ALL) -o $@ -c $<
 
-$(MAIN): $(SRC.o)
-	$(CC) $(CFLAGS) -Wall -Wextra -Wpedantic $(LDFLAGS) -o $@ $(SRC.o) $(LIBS)
+handlers/decl_handlers.h: $(HANDLERS.C)
+	sed -n '/^DECL_HANDLER(/s/ {$$/;/p' $(HANDLERS.C) \
+		> $@
+
+handlers/handlers.h: handlers/*.c
+	sed -n '/^DECL_HANDLER(/{s//X(/;s/ {$$//;p}' $(HANDLERS.C) \
+		> $@
+
+$(MAIN).o: $(MAIN).c $(HANDLERS.H)
+
+$(MAIN): $(OBJS)
+	$(CC) $(CFLAGS_ALL) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 clean:
-	rm -f $(SRC.o) $(MAIN)
+	rm -f $(OBJS) $(MAIN) $(HANDLERS.H)
