@@ -15,9 +15,7 @@ int record_chown(char *pathname, uid_t owner, gid_t group, int follow) {
 
 	if (follow) {
 		if (!(fullpath = realpath(pathname, 0))) {
-#ifndef NDEBUG
-			warn("realpath");
-#endif
+			WARN("realpath");
 			goto out;
 		}
 	} else
@@ -45,9 +43,7 @@ static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	if (pull_pathname(notifyfd, req, 0, pathname) == -1)
 		goto out;
-#ifndef NDEBUG
-	pwarnx(req->pid, "%s(\"%s\", %d, %d)", syscall_name, pathname, owner, group);
-#endif
+	PDBGX(req->pid, "%s(\"%s\", %d, %d)", syscall_name, pathname, owner, group);
 
 	if (pathname[0] != '/') {
 		char procpath[PATH_MAX];
@@ -78,15 +74,11 @@ void handle_fchown(HANDLER_ARGS) {
 	int rc = -1;
 	char procpath[PATH_MAX];
 
-#ifndef NDEBUG
-	pwarnx(req->pid, "fchown(%d, %d, %d)", fd, owner, group);
-#endif
+	PDBGX(req->pid, "fchown(%d, %d, %d)", fd, owner, group);
 
 	rc = snprintf(procpath, PATH_MAX, "/proc/%jd/fd/%d", (intmax_t)req->pid, fd);
 	if (rc < 0 || rc >= PATH_MAX) {
-#ifndef NDEBUG
-		pwarn(req->pid, "snprintf(procpath) = %d", rc);
-#endif
+		PWARN(req->pid, "snprintf(procpath) = %d", rc);
 		errno = EIO;
 		goto out;
 	}
@@ -110,15 +102,13 @@ void handle_fchownat(HANDLER_ARGS) {
 	if (pathname_l == -1)
 		goto out;
 
-#ifndef NDEBUG
 	if (fd == AT_FDCWD)
-		pwarnx(req->pid, "fchownat(AT_FDCWD, \"%s\", %d, %d, %d)", pathname, owner, group, flags);
+		PDBGX(req->pid, "fchownat(AT_FDCWD, \"%s\", %d, %d, %d)", pathname, owner, group, flags);
 	else
-		pwarnx(req->pid, "fchownat(%d, \"%s\", %d, %d, %d)", fd, pathname, owner, group, flags);
-#endif
+		PDBGX(req->pid, "fchownat(%d, \"%s\", %d, %d, %d)", fd, pathname, owner, group, flags);
 
 	if ((flags & (AT_EMPTY_PATH|AT_SYMLINK_NOFOLLOW)) == (AT_EMPTY_PATH|AT_SYMLINK_NOFOLLOW)) {
-		pwarnx(req->pid, "not implemented: AT_EMPTY_PATH|AT_SYMLINK_NOFOLLOW");
+		PWARNX(req->pid, "not implemented: AT_EMPTY_PATH|AT_SYMLINK_NOFOLLOW");
 		errno = ENOSYS;
 		goto out;
 	}

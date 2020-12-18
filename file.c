@@ -43,9 +43,7 @@ struct file *file_upsert_path(char *path, int follow) {
 	else
 		rc = lstat(path, &st);
 	if (rc) {
-#ifndef NDEBUG
-		warn("l?stat");
-#endif
+		WARN("l?stat");
 		goto out;
 	}
 
@@ -54,9 +52,7 @@ struct file *file_upsert_path(char *path, int follow) {
 	} else {
 		f = malloc(sizeof(struct file));
 		if (!f) {
-#ifndef NDEBUG
-			warn("malloc");
-#endif
+			WARN("malloc");
 			goto out;
 		}
 
