@@ -36,7 +36,19 @@ extern struct comproot comproot;
 #define PDBG(pid, fmt, ...) _LOGFN_W(comproot.verbose > 1, warn, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 #define PDBGX(pid, fmt, ...) _LOGFN_W(comproot.verbose > 1, warnx, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 
-#define HANDLER_ARGS int notifyfd, struct seccomp_notif *req, struct seccomp_notif_resp *resp
-#define PASS_HANDLER_ARGS notifyfd, req, resp
+#define A_HANDLER_FD int HANDLER_FD
+#define A_HANDLER_REQ struct seccomp_notif *HANDLER_REQ
+#define A_HANDLER_RESP struct seccomp_notif_resp *HANDLER_RESP
+#define HANDLER_ARGS A_HANDLER_FD, A_HANDLER_REQ, A_HANDLER_RESP
+#define PASS_HANDLER_ARGS HANDLER_FD, HANDLER_REQ, HANDLER_RESP
 typedef void (*handler_func)(HANDLER_ARGS);
 #define DECL_HANDLER(syscall_name) void handle_##syscall_name(HANDLER_ARGS)
+
+#define HANDLER_ID HANDLER_REQ->id
+#define HANDLER_PID HANDLER_REQ->pid
+#define HANDLER_ARG(i) HANDLER_REQ->data.args[i]
+#define HANDLER_END \
+	do { \
+	HANDLER_RESP->val = rc; \
+	HANDLER_RESP->error = rc ? -errno : 0; \
+	} while(0)

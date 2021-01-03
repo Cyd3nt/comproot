@@ -17,29 +17,28 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	int rc = -1;
 
-	if (pull_pathname(notifyfd, req, 0, pathname) == -1)
+	if (pull_pathname(HANDLER_FD, HANDLER_REQ, 0, pathname) == -1)
 		goto out;
 
 	if (pathname[0] != '/') {
 		char procpath[PATH_MAX];
-		if (chdir_to_fd(req->pid, AT_FDCWD, procpath))
+		if (chdir_to_fd(HANDLER_PID, AT_FDCWD, procpath))
 			goto out;
 	}
 
 	if (stat_upsert_path(&statbuf, pathname, follow) == -1)
 		goto out;
 
-	PDBGX(req->pid, "%s(\"%s\", "STAT_FMT")", syscall_name, pathname, STAT_ARG(statbuf));
+	PDBGX(HANDLER_PID, "%s(\"%s\", "STAT_FMT")", syscall_name, pathname, STAT_ARG(statbuf));
 
 	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
-	struct iovec riov[] = {{(void *)req->data.args[1], sizeof(statbuf)}};
-	if (tx_data(notifyfd, req, liov, 1, riov, 1, 1) == -1)
+	struct iovec riov[] = {{(void *)HANDLER_ARG(1), sizeof(statbuf)}};
+	if (tx_data(HANDLER_FD, HANDLER_REQ, liov, 1, riov, 1, 1) == -1)
 		goto out;
 
 	rc = 0;
 out:
-	resp->val = rc;
-	resp->error = rc ? -errno : 0;
+	HANDLER_END;
 }
 
 DECL_HANDLER(stat) {
@@ -51,23 +50,22 @@ DECL_HANDLER(lstat) {
 }
 
 DECL_HANDLER(fstat) {
-	int fd = req->data.args[0];
+	int fd = HANDLER_ARG(0);
 	struct stat statbuf;
 
 	int rc = -1;
 
-	if (stat_upsert_fd(&statbuf, req->pid, fd) == -1)
+	if (stat_upsert_fd(&statbuf, HANDLER_PID, fd) == -1)
 		goto out;
 
-	PDBGX(req->pid, "fstat(%d, "STAT_FMT")", fd, STAT_ARG(statbuf));
+	PDBGX(HANDLER_PID, "fstat(%d, "STAT_FMT")", fd, STAT_ARG(statbuf));
 
 	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
-	struct iovec riov[] = {{(void *)req->data.args[1], sizeof(statbuf)}};
-	if (tx_data(notifyfd, req, liov, 1, riov, 1, 1) == -1)
+	struct iovec riov[] = {{(void *)HANDLER_ARG(1), sizeof(statbuf)}};
+	if (tx_data(HANDLER_FD, HANDLER_REQ, liov, 1, riov, 1, 1) == -1)
 		goto out;
 
 	rc = 0;
 out:
-	resp->val = rc;
-	resp->error = rc ? -errno : 0;
+	HANDLER_END;
 }
