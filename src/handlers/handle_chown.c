@@ -75,12 +75,8 @@ DECL_HANDLER(fchown) {
 
 	PDBGX(req->pid, "fchown(%d, %d, %d)", fd, owner, group);
 
-	rc = snprintf(procpath, PATH_MAX, "/proc/%jd/fd/%d", (intmax_t)req->pid, fd);
-	if (rc < 0 || rc >= PATH_MAX) {
-		PWARN(req->pid, "snprintf(procpath) = %d", rc);
-		errno = EIO;
+	if (get_fd_path(req->pid, fd, procpath) == -1)
 		goto out;
-	}
 
 	rc = record_chown(procpath, owner, group, 0);
 out:

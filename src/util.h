@@ -6,6 +6,7 @@
 
 #include "comproot.h"
 
+int get_fd_path(pid_t pid, int fd, char *procpath);
 int chdir_to_fd(pid_t pid, int fd, char *procpath);
 
 #define PROC_VM_BUFS const struct iovec liov[], unsigned long nl, const struct iovec riov[], unsigned long nr

@@ -7,8 +7,8 @@
 #include "comproot.h"
 #include "util.h"
 
-int chdir_to_fd(pid_t pid, int fd, char *procpath) {
-	int rc;
+int get_fd_path(pid_t pid, int fd, char *procpath) {
+	int rc = -1;
 
 	errno = 0;
 	if (fd == AT_FDCWD)
@@ -20,6 +20,13 @@ int chdir_to_fd(pid_t pid, int fd, char *procpath) {
 		errno = EIO;
 		return -1;
 	}
+
+	return 0;
+}
+
+int chdir_to_fd(pid_t pid, int fd, char *procpath) {
+	if (get_fd_path(pid, fd, procpath) == -1)
+		return -1;
 
 	if (chdir(procpath)) {
 		PWARN(pid, "chdir(%s)", procpath);
