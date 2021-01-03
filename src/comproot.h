@@ -32,11 +32,11 @@ extern struct comproot comproot;
 #define PWARN(pid, fmt, ...) _LOGFN_W(comproot.verbose, warn, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 #define PWARNX(pid, fmt, ...) _LOGFN_W(comproot.verbose, warnx, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 
-#define DBG(fmt, ...) _LOGFN_W(comproot.verbose > 1, warn, fmt, ##__VA_ARGS__)
-#define DBGX(fmt, ...) _LOGFN_W(comproot.verbose > 1, warnx, fmt, ##__VA_ARGS__)
+#define DBG(fmt, ...) _LOGFN_W(comproot.verbose >= 2, warn, fmt, ##__VA_ARGS__)
+#define DBGX(fmt, ...) _LOGFN_W(comproot.verbose >= 2, warnx, fmt, ##__VA_ARGS__)
 
-#define PDBG(pid, fmt, ...) _LOGFN_W(comproot.verbose > 1, warn, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
-#define PDBGX(pid, fmt, ...) _LOGFN_W(comproot.verbose > 1, warnx, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
+#define PDBG(pid, fmt, ...) _LOGFN_W(comproot.verbose >= 2, warn, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
+#define PDBGX(pid, fmt, ...) _LOGFN_W(comproot.verbose >= 2, warnx, "[%jd] "fmt, (intmax_t)pid, ##__VA_ARGS__)
 
 #define A_HANDLER_FD int HANDLER_FD
 #define A_HANDLER_REQ struct seccomp_notif *HANDLER_REQ
