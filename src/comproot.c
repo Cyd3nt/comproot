@@ -18,7 +18,9 @@
 #define ADVERTISEMENT "COMPROOT_STAGE2"
 
 struct comproot comproot = {
+	.unknown_is_real = 0,
 	.verbose = 0,
+
 	.uid = -1,
 	.gid = -1,
 };
@@ -246,6 +248,7 @@ static int stage1(char *argv[], int arg_offset) {
 
 struct option options[] = {
 	{"help",            no_argument,    0, 'h'},
+	{"unknown-is-real", no_argument,    0, 'u'},
 	{"verbose",         no_argument,    0, 'v'},
 	{ 0,                0,              0,  0 },
 };
@@ -265,10 +268,13 @@ int main(int argc, char *argv[]) {
 		int opt;
 		opterr = 0;
 		optind = 0;
-		while ((opt = getopt_long(argc, argv, "+hv", options, 0)) != -1) {
+		while ((opt = getopt_long(argc, argv, "+huv", options, 0)) != -1) {
 			switch (opt) {
 			case 'h':
 				return usage(0);
+				break;
+			case 'u':
+				comproot.unknown_is_real = 1;
 				break;
 			case 'v':
 				comproot.verbose++;

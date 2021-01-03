@@ -6,7 +6,9 @@
 #include <seccomp.h>
 
 struct comproot {
+	int unknown_is_real;
 	int verbose;
+
 	uid_t uid;
 	gid_t gid;
 };
