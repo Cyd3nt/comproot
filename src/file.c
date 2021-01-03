@@ -79,5 +79,5 @@ void dump_files(const void *node, VISIT visit, int level) {
 	if (!f)
 		return;
 
-	printf("dev=%jd ino=%jd uid=%d gid=%d\n", (intmax_t)f->st_dev, (intmax_t)f->st_ino, f->st_uid, f->st_gid);
+	printf("dev=%jd,ino=%jd,uid=%d,gid=%d\n", (intmax_t)f->st_dev, (intmax_t)f->st_ino, f->st_uid, f->st_gid);
 }
