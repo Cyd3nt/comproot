@@ -6,8 +6,8 @@
 
 #include "comproot.h"
 
-int get_fd_path(pid_t pid, int fd, char *procpath);
-int chdir_to_fd(pid_t pid, int fd, char *procpath);
+int get_fd_path(pid_t pid, int fd, char procpath[PATH_MAX]);
+int chdir_to_fd(pid_t pid, int fd, char procpath[PATH_MAX]);
 
 #define A_PROC_VM_BUFS const struct iovec liov[], unsigned long nl, const struct iovec riov[], unsigned long nr
 int tx_data(A_HANDLER_FD, A_HANDLER_REQ, A_PROC_VM_BUFS, int push);

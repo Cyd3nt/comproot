@@ -7,7 +7,7 @@
 #include "comproot.h"
 #include "util.h"
 
-int get_fd_path(pid_t pid, int fd, char *procpath) {
+int get_fd_path(pid_t pid, int fd, char procpath[PATH_MAX]) {
 	int rc = -1;
 
 	errno = 0;
@@ -24,7 +24,7 @@ int get_fd_path(pid_t pid, int fd, char *procpath) {
 	return 0;
 }
 
-int chdir_to_fd(pid_t pid, int fd, char *procpath) {
+int chdir_to_fd(pid_t pid, int fd, char procpath[PATH_MAX]) {
 	if (get_fd_path(pid, fd, procpath) == -1)
 		return -1;
 
