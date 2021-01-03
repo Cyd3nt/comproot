@@ -16,7 +16,11 @@
 
 #define ADVERTISEMENT "COMPROOT_STAGE2"
 
-int verbose = 2;
+struct comproot comproot = {
+	.verbose = 2,
+	.uid = -1,
+	.gid = -1,
+};
 
 static void new_notification(short revents, int notifyfd) {
 	struct seccomp_notif *req;
@@ -215,6 +219,9 @@ static int stage1(char *argv[]) {
 	} else if (child == -1)
 		ERR(2, "fork");
 	/* else parent ... */
+
+	comproot.uid = getuid();
+	comproot.gid = getgid();
 
 	close(sockfds[0]);
 	tx_notifyfd(sockfds[1], &child, &notifyfd, 0);

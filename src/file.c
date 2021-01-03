@@ -60,9 +60,9 @@ static int upsert_path(struct stat *st, struct file **f, char *path, int follow)
 
 		(*f)->st_dev = st->st_dev;
 		(*f)->st_ino = st->st_ino;
-		if (st->st_uid == my_uid)
+		if (st->st_uid == comproot.uid)
 			st->st_uid = 0;
-		if (st->st_gid == my_gid)
+		if (st->st_gid == comproot.gid)
 			st->st_gid = 0;
 		(*f)->st_uid = st->st_uid;
 		(*f)->st_gid = st->st_gid;
