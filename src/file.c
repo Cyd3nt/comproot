@@ -3,6 +3,7 @@
 
 #include "comproot.h"
 #include "file.h"
+#include "util.h"
 
 #define FILEPTR(f) *(struct file **)f
 void *files = 0;
