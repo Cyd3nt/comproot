@@ -33,37 +33,75 @@ struct file *file_get(dev_t dev, ino_t ino) {
 	return f;
 }
 
-struct file *file_upsert_path(char *path, int follow) {
-	struct file *f = 0;
-	struct stat st;
-	int rc;
+static int upsert_path(struct stat *st, struct file **f, char *path, int follow) {
+	int rc = -1;
+	*f = 0;
 
 	if (follow)
-		rc = stat(path, &st);
+		rc = stat(path, st);
 	else
-		rc = lstat(path, &st);
-	if (rc) {
-		WARN("l?stat");
+		rc = lstat(path, st);
+	if (rc == -1) {
+		DBG("l?stat: %s", path);
 		goto out;
 	}
 
-	if ((f = file_get(st.st_dev, st.st_ino))) {
-		goto out;
+	if ((*f = file_get(st->st_dev, st->st_ino))) {
+		st->st_uid = (*f)->st_uid;
+		st->st_gid = (*f)->st_gid;
 	} else {
-		f = malloc(sizeof(struct file));
-		if (!f) {
+		*f = malloc(sizeof(struct file));
+		if (!*f) {
 			WARN("malloc");
+			rc = -1;
 			goto out;
 		}
 
-		f->st_dev = st.st_dev;
-		f->st_ino = st.st_ino;
-		f->st_uid = st.st_uid;
-		f->st_gid = st.st_gid;
-		file_search(f);
+		(*f)->st_dev = st->st_dev;
+		(*f)->st_ino = st->st_ino;
+		if (st->st_uid == my_uid)
+			st->st_uid = 0;
+		if (st->st_gid == my_gid)
+			st->st_gid = 0;
+		(*f)->st_uid = st->st_uid;
+		(*f)->st_gid = st->st_gid;
+		file_search(*f);
 	}
+
+	rc = 0;
 out:
-	return f;
+	return rc;
+}
+
+/* Fills *st with stat information on path, optionally following
+ * terminal symlinks if follow is nonzero. Returns 0 on success, -1 on
+ * error. The results returned are cached and may have been modified by
+ * other syscall handlers.
+ */
+int stat_upsert_path(struct stat *st, char *path, int follow) {
+	struct file *f;
+	return upsert_path(st, &f, path, follow);
+}
+
+/* Same as the above but with a file descriptor. */
+int stat_upsert_fd(struct stat *st, pid_t pid, int fd) {
+	char procpath[PATH_MAX];
+
+	if (get_fd_path(pid, fd, procpath) == -1)
+		return -1;
+
+	return stat_upsert_path(st, procpath, 0);
+}
+
+/* Returns a filled *file concerning path, optionally following terminal
+ * symlinks if follow is nonzero. Returns a null pointer on error. The
+ * results returned are cached and may have been modified by other
+ * syscall handlers.
+ */
+struct file *file_upsert_path(char *path, int follow) {
+	struct file *f;
+	struct stat st;
+	return upsert_path(&st, &f, path, follow) == -1 ? 0 : f;
 }
 
 void file_walk(void (*action)(const void *, VISIT, int)) {
