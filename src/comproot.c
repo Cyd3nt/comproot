@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: NCSA */
 #include <errno.h>
+#include <getopt.h> /* getopt_long */
 #include <poll.h>   /* POLLIN, ppoll */
 #include <signal.h> /* SIG_*, sigaddset, SIG*, sigemptyset, sigprocmask, signal */
 #include <stdio.h>  /* snprintf */
@@ -17,7 +18,7 @@
 #define ADVERTISEMENT "COMPROOT_STAGE2"
 
 struct comproot comproot = {
-	.verbose = 2,
+	.verbose = 0,
 	.uid = -1,
 	.gid = -1,
 };
@@ -171,8 +172,8 @@ static int stage2(char *sockfd_env, char *argv[]) {
 
 	child = fork();
 	if (child == 0) {
-		if (execvp(argv[1], argv + 1) == -1)
-			ERR(2, "execvp: %s", argv[1]);
+		if (execvp(argv[0], argv) == -1)
+			ERR(2, "execvp: %s", argv[0]);
 		/* not reached */
 		return 255;
 	} else if (child == -1)
@@ -183,7 +184,7 @@ static int stage2(char *sockfd_env, char *argv[]) {
 	return 0;
 }
 
-static int stage1(char *argv[]) {
+static int stage1(char *argv[], int arg_offset) {
 	int sockfds[2], sfd = -1, notifyfd = -1, rc = -1;
 	pid_t child;
 	sigset_t smask;
@@ -212,7 +213,7 @@ static int stage1(char *argv[]) {
 	if (child == 0) {
 		if (signal(SIGCHLD, SIG_DFL) == SIG_ERR)
 			ERR(2, "signal(SIGCHLD)");
-		if (execvp(argv[0], argv) == -1)
+		if (execvp(argv[0], argv + arg_offset) == -1)
 			ERR(2, "execvp: %s", argv[0]);
 		/* not reached */
 		return 255;
@@ -243,14 +244,43 @@ static int stage1(char *argv[]) {
 	return rc;
 }
 
+struct option options[] = {
+	{"help",            no_argument,    0, 'h'},
+	{"verbose",         no_argument,    0, 'v'},
+	{ 0,                0,              0,  0 },
+};
+
+static int usage(int rc) {
+	fputs("Usage: comproot [OPTIONS...] PROGRAM [ARGUMENTS...]\n", stderr);
+	return rc;
+}
+
 int main(int argc, char *argv[]) {
 	char *sockfd_env = 0;
 
-	if (argc < 2)
-		ERRX(1, "Usage: %s PROGRAM [ARGUMENTS...]", argv[0]);
-
 	if ((sockfd_env = getenv(ADVERTISEMENT)))
 		return stage2(sockfd_env, argv);
-	else
-		return stage1(argv);
+
+	else {
+		int opt;
+		opterr = 0;
+		optind = 0;
+		while ((opt = getopt_long(argc, argv, "+hv", options, 0)) != -1) {
+			switch (opt) {
+			case 'h':
+				return usage(0);
+				break;
+			case 'v':
+				comproot.verbose++;
+				break;
+			case '?':
+			default:
+				return usage(1);
+				break;
+			}
+		}
+		if (optind >= argc)
+			return usage(1);
+		return stage1(argv, optind);
+	}
 }
