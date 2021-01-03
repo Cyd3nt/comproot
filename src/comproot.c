@@ -242,7 +242,8 @@ static int stage1(char *argv[], int arg_offset) {
 		}
 	}
 
-	file_walk(dump_files);
+	if (comproot.verbose >= 2)
+		file_walk(dump_files);
 	return rc;
 }
 
