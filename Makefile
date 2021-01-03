@@ -30,3 +30,19 @@ $(MAIN): $(OBJS)
 
 clean:
 	rm -f $(MAIN) $(OBJS) $(HANDLERS.H) $(DECL_HANDLERS.H)
+
+#
+# Maintainer targets:
+#
+
+.PHONY: list-todo
+list-todo:
+	@awk '/^[\t][^\t]/{print $$1}' docs/TODO
+
+.PHONY: list-incomplete
+list-incomplete:
+	@awk '/^[\t][\t][^\t]/{print $$1}' docs/TODO
+
+.PHONY: list-done
+list-done:
+	@awk '/^[\t][\t][\t][^\t]/{print $$1}' docs/TODO
