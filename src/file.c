@@ -66,7 +66,11 @@ static int upsert_path(struct stat *st, struct file **f, char *path, int follow)
 			st->st_gid = 0;
 		(*f)->st_uid = st->st_uid;
 		(*f)->st_gid = st->st_gid;
-		file_search(*f);
+		if (file_search(*f) == 0) {
+			/* Not enough memory! */
+			rc = -1;
+			goto out;
+		}
 	}
 
 	rc = 0;
