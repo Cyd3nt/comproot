@@ -11,8 +11,11 @@
 struct file {
 	dev_t st_dev;
 	ino_t st_ino;
+	/* nlink_t st_nlink; */
+	/* mode_t st_mode; */
 	uid_t st_uid;
 	gid_t st_gid;
+	/* dev_t st_rdev; */
 };
 
 struct file *file_get(dev_t dev, ino_t ino);
