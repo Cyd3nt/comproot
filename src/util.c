@@ -37,7 +37,7 @@ int chdir_to_fd(pid_t pid, int fd, char *procpath) {
 }
 
 int tx_data(int notifyfd, struct seccomp_notif *req, PROC_VM_BUFS, int push) {
-	int rc;
+	int rc = -1;
 	ssize_t (*func)(pid_t pid, PROC_VM_BUFS, unsigned long flags) = 0;
 
 	if (push)
@@ -73,7 +73,7 @@ int check_pathname(char pathname[PATH_MAX]) {
 }
 
 int pull_pathname(int notifyfd, struct seccomp_notif *req, int argno, char pathname[PATH_MAX]) {
-	int rc;
+	int rc = -1;
 	struct iovec liov[] = {{pathname, PATH_MAX+1}};
 	struct iovec riov[] = {{(void *)req->data.args[argno], PATH_MAX+1}};
 
