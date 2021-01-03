@@ -90,7 +90,7 @@ fsconfig
 fsmount
 fsopen
 fspick
-	fstat
+			fstat
 	fstat64
 	fstatat64
 	fstatfs
@@ -184,7 +184,7 @@ lookup_dcookie
 	lremovexattr
 lseek
 	lsetxattr
-	lstat
+			lstat
 	lstat64
 madvise
 mbind
@@ -399,7 +399,7 @@ splice
 spu_create
 spu_run
 ssetmask
-	stat
+			stat
 	stat64
 	statfs
 	statfs64
