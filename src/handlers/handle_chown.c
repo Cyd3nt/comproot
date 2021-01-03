@@ -9,28 +9,25 @@
 #include "../util.h"
 
 static int record_chown(char *pathname, uid_t owner, gid_t group, int follow) {
-	int rc = -1;
 	char *fullpath;
 
 	if (follow) {
 		if (!(fullpath = realpath(pathname, 0))) {
 			WARN("realpath");
-			goto out;
+			return -1;
 		}
 	} else
 		fullpath = pathname;
 
 	struct file *f = file_upsert_path(fullpath, follow);
 	if (!f)
-		goto out;
+		return -1;
 	if (owner != (uid_t)-1)
 		f->st_uid = owner;
 	if (group != (gid_t)-1)
 		f->st_gid = group;
 
-	rc = 0;
-out:
-	return rc;
+	return 0;
 }
 
 static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
