@@ -49,7 +49,7 @@ typedef void (*handler_func)(HANDLER_ARGS);
 #define HANDLER_ID HANDLER_REQ->id
 #define HANDLER_PID HANDLER_REQ->pid
 #define HANDLER_ARG(i) HANDLER_REQ->data.args[i]
-#define HANDLER_END \
+#define HANDLER_END(rc) \
 	do { \
 	HANDLER_RESP->val = rc; \
 	HANDLER_RESP->error = rc ? -errno : 0; \

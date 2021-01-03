@@ -49,7 +49,7 @@ static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	rc = record_chown(pathname, owner, group, follow);
 out:
-	HANDLER_END;
+	HANDLER_END(rc);
 }
 
 DECL_HANDLER(chown) {
@@ -76,7 +76,7 @@ DECL_HANDLER(fchown) {
 
 	rc = record_chown(procpath, owner, group, 0);
 out:
-	HANDLER_END;
+	HANDLER_END(rc);
 }
 
 DECL_HANDLER(fchownat) {
@@ -115,5 +115,5 @@ DECL_HANDLER(fchownat) {
 
 	rc = record_chown(fullpath, owner, group, !(flags & AT_SYMLINK_NOFOLLOW));
 out:
-	HANDLER_END;
+	HANDLER_END(rc);
 }

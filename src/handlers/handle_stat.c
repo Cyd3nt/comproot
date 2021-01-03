@@ -38,7 +38,7 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	rc = 0;
 out:
-	HANDLER_END;
+	HANDLER_END(rc);
 }
 
 DECL_HANDLER(stat) {
@@ -67,5 +67,5 @@ DECL_HANDLER(fstat) {
 
 	rc = 0;
 out:
-	HANDLER_END;
+	HANDLER_END(rc);
 }
