@@ -8,6 +8,9 @@
 #include "../file.h"
 #include "../util.h"
 
+#define STAT_FMT "{st_uid = %jd, st_gid = %jd}"
+#define STAT_ARG(st) (intmax_t)st.st_uid, (intmax_t)st.st_gid
+
 static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 	char pathname[PATH_MAX] = {0};
 	struct stat statbuf;
@@ -23,15 +26,14 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 			goto out;
 	}
 
-	rc = stat_upsert_path(&statbuf, pathname, follow);
-	if (rc == -1)
+	if (stat_upsert_path(&statbuf, pathname, follow) == -1)
 		goto out;
 
-	PDBGX(req->pid, "%s(\"%s\", {st_uid = %jd, st_gid = %jd})", syscall_name, pathname, (intmax_t)statbuf.st_uid, (intmax_t)statbuf.st_gid);
+	PDBGX(req->pid, "%s(\"%s\", "STAT_FMT")", syscall_name, pathname, STAT_ARG(statbuf));
 
 	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
 	struct iovec riov[] = {{(void *)req->data.args[1], sizeof(statbuf)}};
-	if ((rc = tx_data(notifyfd, req, liov, 1, riov, 1, 1)) == -1)
+	if (tx_data(notifyfd, req, liov, 1, riov, 1, 1) == -1)
 		goto out;
 
 	rc = 0;
@@ -54,16 +56,14 @@ DECL_HANDLER(fstat) {
 
 	int rc = -1;
 
-	rc = stat_upsert_fd(&statbuf, req->pid, fd);
-	if (rc == -1)
+	if (stat_upsert_fd(&statbuf, req->pid, fd) == -1)
 		goto out;
 
-	PDBGX(req->pid, "fstat(%d, {st_uid = %jd, st_gid = %jd})", fd, (intmax_t)statbuf.st_uid, statbuf.st_gid);
+	PDBGX(req->pid, "fstat(%d, "STAT_FMT")", fd, STAT_ARG(statbuf));
 
 	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
 	struct iovec riov[] = {{(void *)req->data.args[1], sizeof(statbuf)}};
-
-	if ((rc = tx_data(notifyfd, req, liov, 1, riov, 1, 1)) == -1)
+	if (tx_data(notifyfd, req, liov, 1, riov, 1, 1) == -1)
 		goto out;
 
 	rc = 0;
