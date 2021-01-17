@@ -17,7 +17,7 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	int rc = -1;
 
-	if (pull_pathname(HANDLER_FD, HANDLER_REQ, 0, pathname) == -1)
+	if (pull_pathname(HANDLER_PROC, HANDLER_REQ, 0, pathname) == -1)
 		goto out;
 
 	if (pathname[0] != '/') {
@@ -31,9 +31,7 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	PDBGX(HANDLER_PID, "%s(\"%s\", "STAT_FMT")", syscall_name, pathname, STAT_ARG(statbuf));
 
-	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
-	struct iovec riov[] = {{(void *)HANDLER_ARG(1), sizeof(statbuf)}};
-	if (tx_data(HANDLER_FD, HANDLER_REQ, liov, 1, riov, 1, 1) == -1)
+	if (tx_data(HANDLER_PROC, &statbuf, HANDLER_ARG(1), sizeof(statbuf), 1) == -1)
 		goto out;
 
 	rc = 0;
@@ -60,9 +58,7 @@ DECL_HANDLER(fstat) {
 
 	PDBGX(HANDLER_PID, "fstat(%d, "STAT_FMT")", fd, STAT_ARG(statbuf));
 
-	struct iovec liov[] = {{&statbuf, sizeof(statbuf)}};
-	struct iovec riov[] = {{(void *)HANDLER_ARG(1), sizeof(statbuf)}};
-	if (tx_data(HANDLER_FD, HANDLER_REQ, liov, 1, riov, 1, 1) == -1)
+	if (tx_data(HANDLER_PROC, &statbuf, HANDLER_ARG(1), sizeof(statbuf), 1) == -1)
 		goto out;
 
 	rc = 0;

@@ -37,7 +37,7 @@ static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	int rc = -1;
 
-	if (pull_pathname(HANDLER_FD, HANDLER_REQ, 0, pathname) == -1)
+	if (pull_pathname(HANDLER_PROC, HANDLER_REQ, 0, pathname) == -1)
 		goto out;
 	PDBGX(HANDLER_PID, "%s(\"%s\", %d, %d)", syscall_name, pathname, owner, group);
 
@@ -88,7 +88,7 @@ DECL_HANDLER(fchownat) {
 
 	int rc = -1;
 
-	pathname_l = pull_pathname(HANDLER_FD, HANDLER_REQ, 1, pathname);
+	pathname_l = pull_pathname(HANDLER_PROC, HANDLER_REQ, 1, pathname);
 	if (pathname_l == -1)
 		goto out;
 

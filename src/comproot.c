@@ -28,6 +28,8 @@ struct comproot comproot = {
 static void new_notification(short revents, int notifyfd) {
 	struct seccomp_notif *req;
 	struct seccomp_notif_resp *resp;
+	int rc, procfd = -1;
+	char procpath[PATH_MAX];
 
 	if (!(revents & POLLIN))
 		ERRX(2, "notifyfd has status %d", revents);
@@ -40,10 +42,19 @@ static void new_notification(short revents, int notifyfd) {
 	resp->id = req->id;
 	resp->flags = 0;
 
+	rc = snprintf(procpath, PATH_MAX, "/proc/%jd", (intmax_t)req->pid);
+	if (rc < 0 || rc >= PATH_MAX)
+		ERR(3, "snprintf(\"/proc/%%jd\") = %d", rc);
+	procfd = open(procpath, O_CLOEXEC|O_DIRECTORY|O_PATH);
+	if (seccomp_notify_id_valid(notifyfd, req->id) || procfd == -1) {
+		PWARNX(req->pid, "died during trace!");
+		goto out;
+	}
+
 	switch(req->data.nr) {
 #define X(syscall_name) \
 	case SCMP_SYS(syscall_name): \
-		handle_##syscall_name(notifyfd, req, resp); \
+		handle_##syscall_name(notifyfd, req, resp, procfd); \
 		break;
 #include "handlers/handlers.h"
 #undef X
@@ -55,6 +66,8 @@ static void new_notification(short revents, int notifyfd) {
 	if (seccomp_notify_respond(notifyfd, resp))
 		ERR(3, "seccomp_notify_respond");
 
+out:
+	close(procfd);
 	seccomp_notify_free(req, resp);
 }
 

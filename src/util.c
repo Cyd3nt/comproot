@@ -36,27 +36,20 @@ int chdir_to_fd(pid_t pid, int fd, char procpath[PATH_MAX]) {
 	return 0;
 }
 
-int tx_data(A_HANDLER_FD, A_HANDLER_REQ, A_PROC_VM_BUFS, int push) {
+int tx_data(A_HANDLER_PROC, void *buf, uint64_t addr, size_t len, int push) {
 	int rc = -1;
-	ssize_t (*func)(pid_t pid, A_PROC_VM_BUFS, unsigned long flags) = 0;
+	int procfd = openat(HANDLER_PROC, "mem", O_RDWR|O_CLOEXEC);
+	if (procfd == -1) {
+		WARNX("process died during trace!");
+		errno = EIO;
+		goto out;
+	}
 
 	if (push)
-		func = process_vm_writev;
+		rc = pwrite(procfd, buf, len, addr);
 	else
-		func = process_vm_readv;
-
-	if ((rc = func(HANDLER_PID, liov, nl, riov, nr, 0)) == -1) {
-		PWARN(HANDLER_PID, "tx_data");
-		errno = EIO;
-		goto out;
-	}
-	if (seccomp_notify_id_valid(HANDLER_FD, HANDLER_ID)) {
-		PWARNX(HANDLER_PID, "died during trace!");
-		rc = -1;
-		errno = EIO;
-		goto out;
-	}
-
+		rc = pread(procfd, buf, len, addr);
+	close(procfd);
 out:
 	return rc;
 }
@@ -72,12 +65,10 @@ int check_pathname(char pathname[PATH_MAX]) {
 	return rc;
 }
 
-int pull_pathname(A_HANDLER_FD, A_HANDLER_REQ, int argno, char pathname[PATH_MAX]) {
+int pull_pathname(A_HANDLER_PROC, A_HANDLER_REQ, int argno, char pathname[PATH_MAX]) {
 	int rc = -1;
-	struct iovec liov[] = {{pathname, PATH_MAX+1}};
-	struct iovec riov[] = {{(void *)HANDLER_ARG(argno), PATH_MAX+1}};
 
-	if ((rc = tx_data(HANDLER_FD, HANDLER_REQ, liov, 1, riov, 1, 0)) == -1)
+	if ((rc = tx_data(HANDLER_PROC, pathname, HANDLER_ARG(argno), PATH_MAX+1, 0)) == -1)
 		goto out;
 
 	rc = check_pathname(pathname);

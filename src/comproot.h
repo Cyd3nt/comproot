@@ -41,8 +41,9 @@ extern struct comproot comproot;
 #define A_HANDLER_FD int HANDLER_FD
 #define A_HANDLER_REQ struct seccomp_notif *HANDLER_REQ
 #define A_HANDLER_RESP struct seccomp_notif_resp *HANDLER_RESP
-#define HANDLER_ARGS A_HANDLER_FD, A_HANDLER_REQ, A_HANDLER_RESP
-#define PASS_HANDLER_ARGS HANDLER_FD, HANDLER_REQ, HANDLER_RESP
+#define A_HANDLER_PROC int HANDLER_PROC
+#define HANDLER_ARGS A_HANDLER_FD, A_HANDLER_REQ, A_HANDLER_RESP, A_HANDLER_PROC
+#define PASS_HANDLER_ARGS HANDLER_FD, HANDLER_REQ, HANDLER_RESP, HANDLER_PROC
 typedef void (*handler_func)(HANDLER_ARGS);
 #define DECL_HANDLER(syscall_name) void handle_##syscall_name(HANDLER_ARGS)
 
