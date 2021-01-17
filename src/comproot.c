@@ -46,7 +46,7 @@ static void new_notification(short revents, int notifyfd) {
 	if (rc < 0 || rc >= PATH_MAX)
 		ERR(3, "snprintf(\"/proc/%%jd\") = %d", rc);
 	procfd = open(procpath, O_CLOEXEC|O_DIRECTORY|O_PATH);
-	if (seccomp_notify_id_valid(notifyfd, req->id) || procfd == -1) {
+	if (seccomp_notify_id_valid(notifyfd, req->id) || procfd == -1 || fchdir(procfd) == -1) {
 		PWARNX(req->pid, "died during trace!");
 		goto out;
 	}

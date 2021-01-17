@@ -89,10 +89,10 @@ int stat_upsert_path(struct stat *st, char *path, int follow) {
 }
 
 /* Same as the above but with a file descriptor. */
-int stat_upsert_fd(struct stat *st, pid_t pid, int fd) {
+int stat_upsert_fd(struct stat *st, int fd) {
 	char procpath[PATH_MAX];
 
-	if (get_fd_path(pid, fd, procpath) == -1)
+	if (get_fd_path(fd, procpath) == -1)
 		return -1;
 
 	return stat_upsert_path(st, procpath, 0);

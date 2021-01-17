@@ -7,16 +7,17 @@
 #include "comproot.h"
 #include "util.h"
 
-int get_fd_path(pid_t pid, int fd, char procpath[PATH_MAX]) {
+int get_fd_path(int fd, char procpath[PATH_MAX]) {
 	int rc = -1;
 
 	errno = 0;
-	if (fd == AT_FDCWD)
-		rc = snprintf(procpath, PATH_MAX, "/proc/%jd/cwd", (intmax_t)pid);
-	else
-		rc = snprintf(procpath, PATH_MAX, "/proc/%jd/fd/%d", (intmax_t)pid, fd);
+	if (fd == AT_FDCWD) {
+		strcpy(procpath, "cwd");
+		rc = 0;
+	} else
+		rc = snprintf(procpath, PATH_MAX, "fd/%d", fd);
 	if (rc < 0 || rc >= PATH_MAX) {
-		PWARN(pid, "snprintf(procpath) = %d", rc);
+		WARN("snprintf(\"fd/%%d\") = %d", rc);
 		errno = EIO;
 		return -1;
 	}
@@ -24,12 +25,12 @@ int get_fd_path(pid_t pid, int fd, char procpath[PATH_MAX]) {
 	return 0;
 }
 
-int chdir_to_fd(pid_t pid, int fd, char procpath[PATH_MAX]) {
-	if (get_fd_path(pid, fd, procpath) == -1)
+int chdir_to_fd(int fd, char procpath[PATH_MAX]) {
+	if (get_fd_path(fd, procpath) == -1)
 		return -1;
 
-	if (chdir(procpath)) {
-		PWARN(pid, "chdir(%s)", procpath);
+	if (chdir(procpath) == -1) {
+		WARN("chdir(procpath)");
 		return -1;
 	}
 

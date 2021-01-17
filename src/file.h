@@ -21,7 +21,7 @@ struct file {
 struct file *file_get(dev_t dev, ino_t ino);
 
 int stat_upsert_path(struct stat *st, char *path, int follow);
-int stat_upsert_fd(struct stat *st, pid_t pid, int fd);
+int stat_upsert_fd(struct stat *st, int fd);
 
 struct file *file_upsert_path(char *path, int follow);
 

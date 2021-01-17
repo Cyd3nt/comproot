@@ -43,7 +43,7 @@ static void handle_chown_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	if (pathname[0] != '/') {
 		char procpath[PATH_MAX];
-		if (chdir_to_fd(HANDLER_PID, AT_FDCWD, procpath))
+		if (chdir_to_fd(AT_FDCWD, procpath))
 			goto out;
 	}
 
@@ -71,7 +71,7 @@ DECL_HANDLER(fchown) {
 
 	PDBGX(HANDLER_PID, "fchown(%d, %d, %d)", fd, owner, group);
 
-	if (get_fd_path(HANDLER_PID, fd, procpath) == -1)
+	if (get_fd_path(fd, procpath) == -1)
 		goto out;
 
 	rc = record_chown(procpath, owner, group, 0);
@@ -104,7 +104,7 @@ DECL_HANDLER(fchownat) {
 	}
 
 	char procpath[PATH_MAX] = {0};
-	if (chdir_to_fd(HANDLER_PID, fd, procpath))
+	if (chdir_to_fd(fd, procpath))
 		goto out;
 
 	char *fullpath = 0;

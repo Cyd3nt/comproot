@@ -22,7 +22,7 @@ static void handle_stat_inner(char *syscall_name, HANDLER_ARGS, int follow) {
 
 	if (pathname[0] != '/') {
 		char procpath[PATH_MAX];
-		if (chdir_to_fd(HANDLER_PID, AT_FDCWD, procpath))
+		if (chdir_to_fd(AT_FDCWD, procpath))
 			goto out;
 	}
 
@@ -53,7 +53,7 @@ DECL_HANDLER(fstat) {
 
 	int rc = -1;
 
-	if (stat_upsert_fd(&statbuf, HANDLER_PID, fd) == -1)
+	if (stat_upsert_fd(&statbuf, fd) == -1)
 		goto out;
 
 	PDBGX(HANDLER_PID, "fstat(%d, "STAT_FMT")", fd, STAT_ARG(statbuf));

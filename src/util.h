@@ -6,8 +6,8 @@
 
 #include "comproot.h"
 
-int get_fd_path(pid_t pid, int fd, char procpath[PATH_MAX]);
-int chdir_to_fd(pid_t pid, int fd, char procpath[PATH_MAX]);
+int get_fd_path(int fd, char procpath[PATH_MAX]);
+int chdir_to_fd(int fd, char procpath[PATH_MAX]);
 
 int tx_data(A_HANDLER_PROC, void *buf, uint64_t addr, size_t len, int push);
 
